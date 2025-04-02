@@ -1,0 +1,18 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table radiska_Postaja {
+    id integer [primary key]
+    ime varchar
+    frekvenca varchar
+    email varchar
+    telefonska_st varchar
+    programska_shema varchar
+}
+
+Table programska_shema {
+  id integer [primary key]
+  path varchar
+
+}
+

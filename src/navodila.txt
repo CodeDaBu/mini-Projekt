@@ -1,0 +1,3 @@
+Seznam radijskih postaj v Sloveniji
+
+Izdelaj aplikacijo, ki vsebuje podatke o vseh radijskihs postajah v Sloveniji,vključno z njihovo frekvenco, kontaktom in programsko shemo.
