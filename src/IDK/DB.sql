@@ -43,10 +43,11 @@ CREATE TABLE "comments" (
 
 ALTER TABLE "radio" ADD FOREIGN KEY ("kraj_id") REFERENCES "kraj" ("id");
 
-ALTER TABLE "kraj" ADD FOREIGN KEY ("drzava_id") REFERENCES "drzave" ("id");
+ALTER TABLE "drzave" ADD FOREIGN KEY ("id") REFERENCES "kraj" ("drzava_id");
 
 ALTER TABLE "users" ADD FOREIGN KEY ("kraj_id") REFERENCES "kraj" ("id");
 
 ALTER TABLE "comments" ADD FOREIGN KEY ("frequency_id") REFERENCES "radio" ("id");
 
 ALTER TABLE "comments" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+
