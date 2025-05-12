@@ -1,0 +1,48 @@
+Table radio {
+  id integer [primary key, increment]
+  ime varchar
+  frekvenca float
+  channel varchar
+  valid_until date
+  phone varchar
+  email varchar
+  kraj_id integer
+}
+
+Table drzave {
+  id integer [primary key, increment]
+  ime varchar
+  koda varchar
+}
+
+Table kraj {
+  id integer [primary key, increment]
+  ime varchar
+  postna_st varchar
+  drzava_id integer
+}
+
+Table users {
+  id integer [primary key, increment]
+  username varchar
+  password varchar
+  email varchar
+  phone varchar
+  kraj_id integer
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table comments {
+  id integer [primary key, increment]
+  comment_text text
+  frequency_id integer
+  user_id integer
+  created_at timestamp
+}
+
+Ref: radio.kraj_id > kraj.id
+Ref: kraj.drzava_id > drzave.id
+Ref: users.kraj_id > kraj.id
+Ref: comments.frequency_id > radio.id
+Ref: comments.user_id > users.id
