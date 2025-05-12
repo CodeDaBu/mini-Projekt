@@ -1,11 +1,11 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.*;
 import java.sql.*;
+import com.example.miniprojekt.db.DatabaseManager;
 
 public class GlavniWindow extends JFrame {
-
-    private JTable table;
 
     public GlavniWindow() {
         setTitle("Seznam radijskih postaj");
@@ -13,61 +13,78 @@ public class GlavniWindow extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        JPanel panel = new JPanel(new BorderLayout());
+
+        // Tabela
         String[] columnNames = {"Ime"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;  // Onemogoči urejanje celic
+                return false; // onemogoči urejanje
             }
         };
-
-        table = new JTable(model);
+        JTable table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane, BorderLayout.CENTER);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
-        try (Connection conn = com.example.miniprojekt.db.DatabaseManager.getConnection()) {
-            String sql = "SELECT id, ime FROM radio";  // Samo ime radijske postaje
+        // Logout gumb
+        JButton logoutButton = new JButton("Odjava");
+        logoutButton.addActionListener(e -> {
+            dispose(); // zapri okno
+            new LoginUI(); // pokaži prijavno okno
+        });
+        panel.add(logoutButton, BorderLayout.SOUTH);
+
+        add(panel);
+
+        // Napolni tabelo z imeni postaj
+        try (Connection conn = DatabaseManager.getConnection()) {
+            String sql = "SELECT id, ime, frekvenca, channel, valid_until, phone, email FROM radio";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                model.addRow(new Object[]{rs.getString("ime")});
+                String name = rs.getString("ime");
+                model.addRow(new Object[]{name});
             }
-
-            // Obdelava klikov na ime radijske postaje
-            table.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseClicked(java.awt.event.MouseEvent e) {
-                    int row = table.getSelectedRow();
-                    if (row != -1) {
-                        String radioName = (String) table.getValueAt(row, 0);
-                        openRadioDetailsWindow(radioName);
-                    }
-                }
-            });
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Napaka pri branju radijskih postaj: " + e.getMessage());
         }
 
-        // Dodaj gumb za Log Out
-        JButton logOutButton = new JButton("Log Out");
-        logOutButton.addActionListener(e -> logout());
-
-        JPanel panel = new JPanel();
-        panel.add(logOutButton);
-        add(panel, BorderLayout.SOUTH);
+        // Dvoklik za prikaz podrobnosti
+        table.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = table.getSelectedRow();
+                    String name = (String) model.getValueAt(row, 0);
+                    showStationDetails(name);
+                }
+            }
+        });
     }
 
-    private void openRadioDetailsWindow(String radioName) {
-        SwingUtilities.invokeLater(() -> new RadioDetailsWindow(radioName).setVisible(true));
-    }
+    private void showStationDetails(String name) {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            String sql = "SELECT * FROM radio WHERE ime = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, name);
+            ResultSet rs = stmt.executeQuery();
 
-    private void logout() {
-        this.dispose();
-        SwingUtilities.invokeLater(() -> new LoginUI().setVisible(true));
-    }
+            if (rs.next()) {
+                String message = String.format(
+                        "Ime: %s\nFrekvenca: %.2f\nKanal: %s\nVelja do: %s\nTelefon: %s\nEmail: %s",
+                        rs.getString("ime"),
+                        rs.getDouble("frekvenca"),
+                        rs.getString("channel"),
+                        rs.getDate("valid_until"),
+                        rs.getString("phone"),
+                        rs.getString("email")
+                );
+                JOptionPane.showMessageDialog(this, message, "Podrobnosti postaje", JOptionPane.INFORMATION_MESSAGE);
+            }
 
-    public static void main(String[] args) {
-        new GlavniWindow().setVisible(true);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Napaka pri pridobivanju podatkov: " + e.getMessage());
+        }
     }
 }
