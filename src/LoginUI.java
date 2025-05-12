@@ -42,8 +42,8 @@ public class LoginUI extends JFrame {
 
                 // Preveri, ali je uporabnik veljaven
                 if (login.isValidUser(username, password)) {
-                    JOptionPane.showMessageDialog(LoginUI.this, "Prijava uspešna!");
-                    // Nadaljuj z naslednjimi koraki (novi zaslon ipd.)
+                    openMainWindow();  // Odpri Glavni Window
+                    dispose();  // Zapri trenutni login UI
                 } else {
                     JOptionPane.showMessageDialog(LoginUI.this, "Nepravilno uporabniško ime ali geslo", "Napaka", JOptionPane.ERROR_MESSAGE);
                 }
@@ -51,6 +51,15 @@ public class LoginUI extends JFrame {
         });
 
         setVisible(true);
+    }
+
+    // Odpri Glavni Window
+    private void openMainWindow() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new GlavniWindow().setVisible(true);  // Zagotovi, da okno teče v svojem threadu
+            }
+        });
     }
 
     public static void main(String[] args) {

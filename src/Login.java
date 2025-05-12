@@ -1,5 +1,5 @@
 import java.sql.*;
-import com.example.miniprojekt.db.DatabaseManager;  // Dodan import za DatabaseManager
+import com.example.miniprojekt.db.DatabaseManager;
 
 public class Login {
 
@@ -13,7 +13,6 @@ public class Login {
     // Povezava z bazo
     private void connectToDatabase() {
         try {
-            // Uporabljamo DatabaseManager za povezavo
             conn = DatabaseManager.getConnection();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -30,12 +29,27 @@ public class Login {
             ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {  // Če uporabnik obstaja
-                System.out.println("Uspešna prijava!");
                 return true;
             } else {
-                System.out.println("Neveljavna uporabniška ime ali geslo.");
+                System.out.println("Neveljavna uporabniško ime ali geslo.");
                 return false;
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Dodaj uporabnika v bazo
+    public boolean registerUser(String username, String password) {
+        try {
+            String query = "INSERT INTO users (username, password) VALUES (?, ?)";
+            PreparedStatement pst = conn.prepareStatement(query);
+            pst.setString(1, username);
+            pst.setString(2, password);
+            int rowsAffected = pst.executeUpdate();
+
+            return rowsAffected > 0;  // Če je uporabnik uspešno vstavljen v bazo
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
