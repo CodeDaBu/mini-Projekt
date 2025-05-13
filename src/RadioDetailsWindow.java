@@ -12,19 +12,15 @@ public class RadioDetailsWindow extends JFrame {
         setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(8, 2, 5, 5)); // povečano število vrstic
-
-        int radioId = -1;
+        panel.setLayout(new GridLayout(8, 2, 5, 5));
 
         try (Connection conn = com.example.miniprojekt.db.DatabaseManager.getConnection()) {
-            String sql = "SELECT * FROM radio WHERE ime = ?";
+            String sql = "SELECT * FROM pridobi_podrobnosti_radia(?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, radioName);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                radioId = rs.getInt("id");
-
                 panel.add(new JLabel("Ime:"));
                 panel.add(new JLabel(rs.getString("ime")));
 
@@ -42,15 +38,17 @@ public class RadioDetailsWindow extends JFrame {
 
                 panel.add(new JLabel("Email:"));
                 panel.add(new JLabel(rs.getString("email")));
+            } else {
+                JOptionPane.showMessageDialog(this, "Radijska postaja ni najdena.");
+                dispose();
+                return;
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Napaka pri nalaganju podrobnosti: " + e.getMessage());
         }
 
-        // Prazna celica da zasede levo polje
+        // Prazen element za estetiko
         panel.add(new JLabel(""));
-
-
 
         add(panel);
     }

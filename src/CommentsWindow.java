@@ -1,14 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
+import com.example.miniprojekt.db.DatabaseManager;
 
 public class CommentsWindow extends JFrame {
     private int radioId;
     private String radioName;
-    private int userId; // trenutno prijavljen uporabnik
+    private int userId;
 
     private JTextArea commentsArea;
     private JTextField inputField;
@@ -47,14 +47,9 @@ public class CommentsWindow extends JFrame {
 
     private void loadComments() {
         commentsArea.setText("");
-        try (Connection conn = com.example.miniprojekt.db.DatabaseManager.getConnection()) {
-            String sql = """
-                SELECT c.comment_text, c.created_at, u.username
-                FROM comments c
-                JOIN users u ON c.user_id = u.id
-                WHERE c.frequency_id = ?
-                ORDER BY c.created_at DESC
-            """;
+        try (Connection conn = DatabaseManager.getConnection()) {
+            String sql = "SELECT c.comment_text, c.created_at, u.username FROM comments c " +
+                    "JOIN users u ON c.user_id = u.id WHERE c.frequency_id = ? ORDER BY c.created_at DESC";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, radioId);
             ResultSet rs = stmt.executeQuery();
@@ -66,7 +61,6 @@ public class CommentsWindow extends JFrame {
 
                 commentsArea.append("[" + time + "] " + user + ": " + text + "\n\n");
             }
-
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Napaka pri nalaganju komentarjev: " + e.getMessage());
         }
@@ -76,7 +70,7 @@ public class CommentsWindow extends JFrame {
         String comment = inputField.getText().trim();
         if (comment.isEmpty()) return;
 
-        try (Connection conn = com.example.miniprojekt.db.DatabaseManager.getConnection()) {
+        try (Connection conn = DatabaseManager.getConnection()) {
             String sql = "INSERT INTO comments (comment_text, frequency_id, user_id, created_at) VALUES (?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, comment);
@@ -87,7 +81,6 @@ public class CommentsWindow extends JFrame {
 
             inputField.setText("");
             loadComments();
-
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Napaka pri dodajanju komentarja: " + e.getMessage());
         }

@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
 import com.example.miniprojekt.db.DatabaseManager;
 
 public class LoginUI extends JFrame {
@@ -17,6 +15,7 @@ public class LoginUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        // Glavni panel z vnosnimi polji
         JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -29,7 +28,7 @@ public class LoginUI extends JFrame {
         panel.add(passwordField);
 
         loginButton = new JButton("Prijavi se");
-        panel.add(new JLabel());  // prazno polje
+        panel.add(new JLabel());  // prazna celica za razmik
         panel.add(loginButton);
 
         add(panel, BorderLayout.CENTER);
@@ -40,36 +39,21 @@ public class LoginUI extends JFrame {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
 
-            if (login.isValidUser(username, password)) {
-                int userId = getUserId(username);  // pridobi ID iz baze
-                dispose();
+            int userId = login.loginUser(username, password);
 
+            if (userId != -1) {
+                dispose();  // zapri prijavno okno
                 if (username.equalsIgnoreCase("admin")) {
                     new GlavniWindowAdmin().setVisible(true);
                 } else {
-                    new GlavniWindow(userId).setVisible(true);  // posreduj ID
+                    new GlavniWindow(userId).setVisible(true);
                 }
             } else {
-                JOptionPane.showMessageDialog(LoginUI.this, "Nepravilno uporabniško ime ali geslo", "Napaka", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Nepravilno uporabniško ime ali geslo", "Napaka", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         setVisible(true);
-    }
-
-    private int getUserId(String username) {
-        try (Connection conn = DatabaseManager.getConnection()) {
-            String sql = "SELECT id FROM users WHERE username = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("id");
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Napaka pri iskanju ID-ja uporabnika: " + e.getMessage());
-        }
-        return -1;
     }
 
     public static void main(String[] args) {

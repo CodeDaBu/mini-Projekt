@@ -5,12 +5,10 @@ public class Login {
 
     private Connection conn;
 
-    // Konstruktor za povezavo z bazo
     public Login() {
         connectToDatabase();
     }
 
-    // Povezava z bazo
     private void connectToDatabase() {
         try {
             conn = DatabaseManager.getConnection();
@@ -19,40 +17,38 @@ public class Login {
         }
     }
 
-    // Preveri, ali uporabnik obstaja v bazi
-    public boolean isValidUser(String username, String password) {
+    // Vrne ID uporabnika, ali -1 če prijava ni uspešna
+    public int loginUser(String username, String password) {
         try {
-            String query = "SELECT * FROM users WHERE username = ? AND password = ?";
+            String query = "SELECT prijava_uporabnika(?, ?)";
             PreparedStatement pst = conn.prepareStatement(query);
             pst.setString(1, username);
             pst.setString(2, password);
             ResultSet rs = pst.executeQuery();
 
-            if (rs.next()) {  // Če uporabnik obstaja
-                return true;
-            } else {
-                System.out.println("Neveljavna uporabniško ime ali geslo.");
-                return false;
+            if (rs.next()) {
+                return rs.getInt(1);  // vrne ID ali -1
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return -1;
     }
 
-    // Dodaj uporabnika v bazo
     public boolean registerUser(String username, String password) {
         try {
-            String query = "INSERT INTO users (username, password) VALUES (?, ?)";
+            String query = "SELECT registracija_uporabnika(?, ?)";
             PreparedStatement pst = conn.prepareStatement(query);
             pst.setString(1, username);
             pst.setString(2, password);
-            int rowsAffected = pst.executeUpdate();
+            ResultSet rs = pst.executeQuery();
 
-            return rowsAffected > 0;  // Če je uporabnik uspešno vstavljen v bazo
+            if (rs.next()) {
+                return rs.getBoolean(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 }

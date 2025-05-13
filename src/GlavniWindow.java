@@ -30,17 +30,15 @@ public class GlavniWindow extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Spodnji panel za gumbe
+        // Spodnji panel z gumbi
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        // Gumb za odjavo
         JButton logoutButton = new JButton("Odjava");
         logoutButton.addActionListener(e -> {
             dispose();
-            new LoginUI(); // Če LoginUI nima userId, tega ni treba spreminjati
+            new LoginUI();
         });
 
-        // Gumb za komentarje
         JButton commentButton = new JButton("Komentiraj");
         commentButton.addActionListener(e -> {
             int selectedRow = table.getSelectedRow();
@@ -60,19 +58,18 @@ public class GlavniWindow extends JFrame {
         bottomPanel.add(commentButton);
         bottomPanel.add(logoutButton);
         panel.add(bottomPanel, BorderLayout.SOUTH);
-
         add(panel);
 
-        // Napolni tabelo
+        // Napolni tabelo s podatki iz baze preko funkcije
         try (Connection conn = DatabaseManager.getConnection()) {
-            String sql = "SELECT ime FROM radio";
+            String sql = "SELECT * FROM pridobi_vse_radio_postaje()";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 model.addRow(new Object[]{rs.getString("ime")});
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Napaka pri branju radijskih postaj: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Napaka pri nalaganju radijev: " + e.getMessage());
         }
 
         // Dvoklik za prikaz podrobnosti
@@ -91,15 +88,14 @@ public class GlavniWindow extends JFrame {
         new RadioDetailsWindow(name).setVisible(true);
     }
 
-    // Metoda za pridobitev ID-ja postaje po imenu
     private int getRadioIdByName(String name) {
         try (Connection conn = DatabaseManager.getConnection()) {
-            String sql = "SELECT id FROM radio WHERE ime = ?";
+            String sql = "SELECT pridobi_radio_id(?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, name);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return rs.getInt("id");
+                return rs.getInt(1);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Napaka pri iskanju ID-ja: " + e.getMessage());
