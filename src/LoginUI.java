@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.*;
+import com.example.miniprojekt.db.DatabaseManager;
 
 public class LoginUI extends JFrame {
 
@@ -39,11 +41,13 @@ public class LoginUI extends JFrame {
             String password = new String(passwordField.getPassword());
 
             if (login.isValidUser(username, password)) {
+                int userId = getUserId(username);  // pridobi ID iz baze
                 dispose();
+
                 if (username.equalsIgnoreCase("admin")) {
                     new GlavniWindowAdmin().setVisible(true);
                 } else {
-                    new GlavniWindow().setVisible(true);
+                    new GlavniWindow(userId).setVisible(true);  // posreduj ID
                 }
             } else {
                 JOptionPane.showMessageDialog(LoginUI.this, "Nepravilno uporabniško ime ali geslo", "Napaka", JOptionPane.ERROR_MESSAGE);
@@ -51,6 +55,21 @@ public class LoginUI extends JFrame {
         });
 
         setVisible(true);
+    }
+
+    private int getUserId(String username) {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            String sql = "SELECT id FROM users WHERE username = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Napaka pri iskanju ID-ja uporabnika: " + e.getMessage());
+        }
+        return -1;
     }
 
     public static void main(String[] args) {

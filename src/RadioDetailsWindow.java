@@ -1,16 +1,21 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.sql.*;
 
 public class RadioDetailsWindow extends JFrame {
 
     public RadioDetailsWindow(String radioName) {
         setTitle("Podrobnosti o radijski postaji");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // Zapre to okno, ne da bi zaprlo celoten program
+        setSize(400, 350);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Pridobi podrobnosti za izbrano radijsko postajo
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(8, 2, 5, 5)); // povečano število vrstic
+
+        int radioId = -1;
+
         try (Connection conn = com.example.miniprojekt.db.DatabaseManager.getConnection()) {
             String sql = "SELECT * FROM radio WHERE ime = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -18,8 +23,7 @@ public class RadioDetailsWindow extends JFrame {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                JPanel panel = new JPanel();
-                panel.setLayout(new GridLayout(7, 2));
+                radioId = rs.getInt("id");
 
                 panel.add(new JLabel("Ime:"));
                 panel.add(new JLabel(rs.getString("ime")));
@@ -38,11 +42,16 @@ public class RadioDetailsWindow extends JFrame {
 
                 panel.add(new JLabel("Email:"));
                 panel.add(new JLabel(rs.getString("email")));
-
-                add(panel, BorderLayout.CENTER);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Napaka pri nalaganju podrobnosti: " + e.getMessage());
         }
+
+        // Prazna celica da zasede levo polje
+        panel.add(new JLabel(""));
+
+
+
+        add(panel);
     }
 }
