@@ -2,7 +2,7 @@
 
 Aplikacija omogoča uporabnikom prijavo, registracijo, iskanje radijskih postaj in komentiranje le-teh. Skrbniki sistema lahko spremljajo komentarje in podatke o radijskih postajah.
 
-## 📦 Vsebina
+## Vsebina
 
 - [Opis aplikacije](#opis-aplikacije)
 - [Struktura podatkovne baze](#struktura-podatkovne-baze)
@@ -10,7 +10,7 @@ Aplikacija omogoča uporabnikom prijavo, registracijo, iskanje radijskih postaj 
 - [SQL sprožilci (triggerji)](#sql-sprožilci-triggerji)
 - [Uporaba v Java aplikaciji](#uporaba-v-java-aplikaciji)
 
-## 📝 Opis aplikacije
+## Opis aplikacije
 
 Uporabnik se lahko:
 
@@ -23,7 +23,7 @@ Uporabnik se lahko:
 
 Skrbniki baze imajo funkcije za spremljanje štetja komentarjev in časa zadnje spremembe.
 
-## 🗂 Struktura podatkovne baze
+## Struktura podatkovne baze
 
 ### Tabele:
 
@@ -41,11 +41,11 @@ Skrbniki baze imajo funkcije za spremljanje štetja komentarjev in časa zadnje 
 - `comments.frequency_id → radio.id`
 - `comments.user_id → users.id`
 
-## 🛠 SQL funkcije
+## SQL funkcije
 
-### 🔐 Avtentikacija
+### Avtentikacija
 
-#### ✅ `check_user_validity(p_username TEXT, p_password TEXT) RETURNS BOOLEAN`
+#### `check_user_validity(p_username TEXT, p_password TEXT) RETURNS BOOLEAN`
 
 Preveri, ali obstaja uporabnik s podanim uporabniškim imenom in geslom.
 
@@ -62,7 +62,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-#### 👤 `prijava_uporabnika(p_username TEXT, p_password TEXT) RETURNS INTEGER`
+#### `prijava_uporabnika(p_username TEXT, p_password TEXT) RETURNS INTEGER`
 
 Vrne ID uporabnika, če obstaja, sicer -1.
 
@@ -83,9 +83,9 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 📏 Registracija
+### Registracija
 
-#### ✅ `register_new_user(p_username TEXT, p_password TEXT) RETURNS VOID`
+#### `register_new_user(p_username TEXT, p_password TEXT) RETURNS VOID`
 
 Registrira novega uporabnika brez preverjanja unikatnosti.
 
@@ -98,7 +98,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-#### 🔐 `registracija_uporabnika(p_username TEXT, p_password TEXT) RETURNS BOOLEAN`
+#### `registracija_uporabnika(p_username TEXT, p_password TEXT) RETURNS BOOLEAN`
 
 Registrira novega uporabnika, če uporabniško ime še ne obstaja.
 
@@ -118,9 +118,9 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 📻 Radijske postaje
+### Radijske postaje
 
-#### ℹ️ `pridobi_radio_id(po_ime TEXT) RETURNS INTEGER`
+#### `pridobi_radio_id(po_ime TEXT) RETURNS INTEGER`
 
 Vrne ID radijske postaje glede na ime.
 
@@ -136,7 +136,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-#### 📄 `pridobi_podrobnosti_radia(po_ime TEXT) RETURNS TABLE(...)`
+#### `pridobi_podrobnosti_radia(po_ime TEXT) RETURNS TABLE(...)`
 
 Vrne podrobnosti radijske postaje glede na ime.
 
@@ -153,7 +153,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-#### 🔢 `pridobi_vse_radio_postaje() RETURNS TABLE(id, ime, frekvenca)`
+#### `pridobi_vse_radio_postaje() RETURNS TABLE(id, ime, frekvenca)`
 
 Vrne seznam vseh radijskih postaj.
 
@@ -168,9 +168,9 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 💬 Komentarji
+### Komentarji
 
-#### ➕ `dodaj_komentar(p_comment_text TEXT, p_frequency_id INT, p_user_id INT) RETURNS VOID`
+#### `dodaj_komentar(p_comment_text TEXT, p_frequency_id INT, p_user_id INT) RETURNS VOID`
 
 Doda komentar za izbrano postajo.
 
@@ -197,9 +197,9 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-### ⌚ Spremljanje sprememb
+### Spremljanje sprememb
 
-#### ♻️ `update_comment_count() RETURNS TRIGGER`
+#### `update_comment_count() RETURNS TRIGGER`
 
 Posodobi `comment_count` v tabeli `radio` ob vsakem novem komentarju.
 
@@ -217,7 +217,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-#### ⏰ `update_radio_last_modified() RETURNS TRIGGER`
+#### `update_radio_last_modified() RETURNS TRIGGER`
 
 Posodobi `last_modified` polje pri novi objavi komentarja.
 
@@ -233,7 +233,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-#### ⏳ `update_last_modified() RETURNS TRIGGER`
+#### `update_last_modified() RETURNS TRIGGER`
 
 Posodobi `last_modified` ob ročni posodobitvi vrstice v `radio`.
 
@@ -249,4 +249,4 @@ $$ LANGUAGE plpgsql;
 
 ---
 
-✅ Vse funkcije so napisane v PL/pgSQL jeziku in skrbijo za logiko uporabnikov, komentarjev ter radijskih postaj.
+Vse funkcije so napisane v PL/pgSQL jeziku in skrbijo za logiko uporabnikov, komentarjev ter radijskih postaj.
