@@ -75,6 +75,26 @@ create table if not exists comments
 alter table comments
     owner to postgres;
 
+create table if not exists log_radio
+(
+    id            serial
+        primary key,
+    radio_id      integer,
+    ime           varchar,
+    frekvenca     double precision,
+    channel       varchar,
+    valid_until   date,
+    phone         varchar,
+    email         varchar,
+    kraj_id       integer,
+    comment_count integer,
+    last_modified timestamp,
+    log_timestamp timestamp default CURRENT_TIMESTAMP
+);
+
+alter table log_radio
+    owner to postgres;
+
 create or replace function check_user_validity(p_username text, p_password text) returns boolean
     language plpgsql
 as
@@ -147,16 +167,17 @@ create or replace function prijava_uporabnika(p_username text, p_password text) 
 as
 $$
 DECLARE
-    user_id INTEGER;
+    uid INT;
 BEGIN
-    SELECT id INTO user_id
+    SELECT id INTO uid
     FROM users
-    WHERE username = p_username AND password = p_password;
+    WHERE username = p_username
+      AND password = crypt(p_password, password);
 
-    IF user_id IS NULL THEN
-        RETURN -1;
+    IF uid IS NOT NULL THEN
+        RETURN uid;
     ELSE
-        RETURN user_id;
+        RETURN -1;
     END IF;
 END;
 $$;
@@ -169,11 +190,11 @@ as
 $$
 BEGIN
     IF EXISTS (SELECT 1 FROM users WHERE username = p_username) THEN
-        RETURN FALSE;  -- uporabniško ime že obstaja
+        RETURN FALSE;  -- uporabnik že obstaja
     END IF;
 
     INSERT INTO users (username, password)
-    VALUES (p_username, p_password);
+    VALUES (p_username, crypt(p_password, gen_salt('bf')));
 
     RETURN TRUE;
 END;
@@ -194,21 +215,6 @@ END;
 $$;
 
 alter function pridobi_radio_id(text) owner to postgres;
-
-create or replace function pridobi_podrobnosti_radia(po_ime text)
-    returns TABLE(id integer, ime text, frekvenca double precision, channel text, valid_until date, phone text, email text)
-    language plpgsql
-as
-$$
-BEGIN
-    RETURN QUERY
-    SELECT id, ime, frekvenca, channel, valid_until, phone, email
-    FROM radio
-    WHERE ime = po_ime;
-END;
-$$;
-
-alter function pridobi_podrobnosti_radia(text) owner to postgres;
 
 create or replace function dodaj_komentar(p_comment_text text, p_frequency_id integer, p_user_id integer) returns void
     language plpgsql
@@ -284,4 +290,598 @@ create trigger update_radio_last_modified
     on comments
     for each row
 execute procedure update_radio_last_modified();
+
+create or replace function pridobi_podrobnosti_radia(po_ime text)
+    returns TABLE(id integer, ime character varying, frekvenca double precision, channel character varying, valid_until date, phone character varying, email character varying)
+    language plpgsql
+as
+$$
+BEGIN
+    RETURN QUERY
+    SELECT r.id, r.ime, r.frekvenca, r.channel, r.valid_until, r.phone, r.email
+    FROM radio r
+    WHERE r.ime = po_ime;
+END;
+$$;
+
+alter function pridobi_podrobnosti_radia(text) owner to postgres;
+
+create or replace function digest(text, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function digest(text, text) owner to postgres;
+
+create or replace function digest(bytea, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function digest(bytea, text) owner to postgres;
+
+create or replace function hmac(text, text, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function hmac(text, text, text) owner to postgres;
+
+create or replace function hmac(bytea, bytea, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function hmac(bytea, bytea, text) owner to postgres;
+
+create or replace function crypt(text, text) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function crypt(text, text) owner to postgres;
+
+create or replace function gen_salt(text) returns text
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function gen_salt(text) owner to postgres;
+
+create or replace function gen_salt(text, integer) returns text
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function gen_salt(text, integer) owner to postgres;
+
+create or replace function encrypt(bytea, bytea, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function encrypt(bytea, bytea, text) owner to postgres;
+
+create or replace function decrypt(bytea, bytea, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function decrypt(bytea, bytea, text) owner to postgres;
+
+create or replace function encrypt_iv(bytea, bytea, bytea, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function encrypt_iv(bytea, bytea, bytea, text) owner to postgres;
+
+create or replace function decrypt_iv(bytea, bytea, bytea, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function decrypt_iv(bytea, bytea, bytea, text) owner to postgres;
+
+create or replace function gen_random_bytes(integer) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function gen_random_bytes(integer) owner to postgres;
+
+create or replace function gen_random_uuid() returns uuid
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function gen_random_uuid() owner to postgres;
+
+create or replace function pgp_sym_encrypt(text, text) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_sym_encrypt(text, text) owner to postgres;
+
+create or replace function pgp_sym_encrypt_bytea(bytea, text) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_sym_encrypt_bytea(bytea, text) owner to postgres;
+
+create or replace function pgp_sym_encrypt(text, text, text) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_sym_encrypt(text, text, text) owner to postgres;
+
+create or replace function pgp_sym_encrypt_bytea(bytea, text, text) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_sym_encrypt_bytea(bytea, text, text) owner to postgres;
+
+create or replace function pgp_sym_decrypt(bytea, text) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_sym_decrypt(bytea, text) owner to postgres;
+
+create or replace function pgp_sym_decrypt_bytea(bytea, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_sym_decrypt_bytea(bytea, text) owner to postgres;
+
+create or replace function pgp_sym_decrypt(bytea, text, text) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_sym_decrypt(bytea, text, text) owner to postgres;
+
+create or replace function pgp_sym_decrypt_bytea(bytea, text, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_sym_decrypt_bytea(bytea, text, text) owner to postgres;
+
+create or replace function pgp_pub_encrypt(text, bytea) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_encrypt(text, bytea) owner to postgres;
+
+create or replace function pgp_pub_encrypt_bytea(bytea, bytea) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_encrypt_bytea(bytea, bytea) owner to postgres;
+
+create or replace function pgp_pub_encrypt(text, bytea, text) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_encrypt(text, bytea, text) owner to postgres;
+
+create or replace function pgp_pub_encrypt_bytea(bytea, bytea, text) returns bytea
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_encrypt_bytea(bytea, bytea, text) owner to postgres;
+
+create or replace function pgp_pub_decrypt(bytea, bytea) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_decrypt(bytea, bytea) owner to postgres;
+
+create or replace function pgp_pub_decrypt_bytea(bytea, bytea) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_decrypt_bytea(bytea, bytea) owner to postgres;
+
+create or replace function pgp_pub_decrypt(bytea, bytea, text) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_decrypt(bytea, bytea, text) owner to postgres;
+
+create or replace function pgp_pub_decrypt_bytea(bytea, bytea, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_decrypt_bytea(bytea, bytea, text) owner to postgres;
+
+create or replace function pgp_pub_decrypt(bytea, bytea, text, text) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_decrypt(bytea, bytea, text, text) owner to postgres;
+
+create or replace function pgp_pub_decrypt_bytea(bytea, bytea, text, text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_pub_decrypt_bytea(bytea, bytea, text, text) owner to postgres;
+
+create or replace function pgp_key_id(bytea) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function pgp_key_id(bytea) owner to postgres;
+
+create or replace function armor(bytea) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function armor(bytea) owner to postgres;
+
+create or replace function armor(bytea, text[], text[]) returns text
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function armor(bytea, text[], text[]) owner to postgres;
+
+create or replace function dearmor(text) returns bytea
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+$$;
+
+alter function dearmor(text) owner to postgres;
+
+create or replace function pgp_armor_headers(text, out key text, out value text) returns setof setof record
+    immutable
+    strict
+    parallel safe
+    language c
+as
+$$
+begin
+-- missing source code
+end;
+
+$$;
+
+alter function pgp_armor_headers(text, out text, out text) owner to postgres;
+
+create or replace function izbrisi_radio_postajo(radio_id integer) returns boolean
+    language plpgsql
+as
+$$
+BEGIN
+    -- Lahko dodaš še dodatno logiko, preverjanje, itd.
+    DELETE FROM radio WHERE id = radio_id;
+    RETURN TRUE;
+EXCEPTION WHEN OTHERS THEN
+    RETURN FALSE;
+END;
+$$;
+
+alter function izbrisi_radio_postajo(integer) owner to postgres;
+
+create or replace function pred_brisi_radio() returns trigger
+    language plpgsql
+as
+$$
+BEGIN
+    -- Na primer, izbriši vse komentarje povezane z radijem
+    DELETE FROM comments WHERE frequency_id = OLD.id;
+    RETURN OLD;
+END;
+$$;
+
+alter function pred_brisi_radio() owner to postgres;
+
+create trigger trg_pred_brisi_radio
+    before delete
+    on radio
+    for each row
+execute procedure pred_brisi_radio();
+
+create or replace function pred_brisi_komentarje() returns trigger
+    language plpgsql
+as
+$$
+BEGIN
+    DELETE FROM comments WHERE user_id = OLD.id;
+    RETURN OLD;
+END;
+$$;
+
+alter function pred_brisi_komentarje() owner to postgres;
+
+create trigger trg_pred_brisi_komentarje
+    before delete
+    on users
+    for each row
+execute procedure pred_brisi_komentarje();
+
+create or replace function izbrisi_uporabnika(p_user_id integer) returns boolean
+    language plpgsql
+as
+$$
+BEGIN
+    DELETE FROM users WHERE id = p_user_id;
+    RETURN TRUE;
+EXCEPTION WHEN OTHERS THEN
+    RETURN FALSE;
+END;
+$$;
+
+alter function izbrisi_uporabnika(integer) owner to postgres;
+
+create or replace function dodaj_radio(p_ime character varying, p_frekvenca double precision, p_channel character varying, p_valid_until date, p_phone character varying, p_email character varying, p_kraj_id integer) returns void
+    language plpgsql
+as
+$$
+DECLARE
+    new_id INTEGER;
+BEGIN
+    -- Vstavi v radio in pridobi nov id
+    INSERT INTO radio (ime, frekvenca, channel, valid_until, phone, email, kraj_id)
+    VALUES (p_ime, p_frekvenca, p_channel, p_valid_until, p_phone, p_email, p_kraj_id)
+    RETURNING id INTO new_id;
+
+    -- Zapiši v log_radio z vsemi podatki
+    INSERT INTO log_radio (radio_id, ime, frekvenca, channel, valid_until, phone, email, kraj_id, comment_count, last_modified)
+    SELECT id, ime, frekvenca, channel, valid_until, phone, email, kraj_id, comment_count, last_modified
+    FROM radio WHERE id = new_id;
+END;
+$$;
+
+alter function dodaj_radio(varchar, double precision, varchar, date, varchar, varchar, integer) owner to postgres;
 

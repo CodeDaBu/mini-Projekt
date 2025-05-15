@@ -3,7 +3,7 @@ import com.example.miniprojekt.db.DatabaseManager;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
 
 public class DodajPostajoWindow extends JFrame {
 
@@ -44,18 +44,22 @@ public class DodajPostajoWindow extends JFrame {
         JButton shraniButton = new JButton("Shrani");
         shraniButton.addActionListener(e -> {
             try (Connection conn = DatabaseManager.getConnection()) {
-                // SQL ukaz za vstavljanje nove postaje v bazo
-                String sql = "INSERT INTO radio (ime, frekvenca, channel, valid_until, phone, email) VALUES (?, ?, ?, ?, ?, ?)";
-                PreparedStatement stmt = conn.prepareStatement(sql);
+                // Klic funkcije dodaj_radio iz baze
+                String sql = "{ call dodaj_radio(?, ?, ?, ?, ?, ?, NULL) }";
+                // NULL za kraj_id, ker ga v UI nimaš (ali ga lahko dodaš, če želiš)
+
+                CallableStatement stmt = conn.prepareCall(sql);
+
                 stmt.setString(1, imeField.getText());
                 stmt.setDouble(2, Double.parseDouble(frekvencaField.getText()));
                 stmt.setString(3, kanalField.getText());
                 stmt.setDate(4, java.sql.Date.valueOf(veljaDoField.getText()));
                 stmt.setString(5, telefonField.getText());
                 stmt.setString(6, emailField.getText());
-                stmt.executeUpdate();
 
-                JOptionPane.showMessageDialog(this, "Postaja uspešno dodana!");
+                stmt.execute();
+
+                JOptionPane.showMessageDialog(this, "Postaja uspešno dodana in zabeležena v logu!");
                 dispose();
                 parent.napolniTabelo(); // Osveži tabelo v glavnem oknu
             } catch (Exception ex) {

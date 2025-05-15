@@ -41,10 +41,46 @@ public class UserManagementWindow extends JFrame {
         JButton saveButton = new JButton("Shrani spremembe");
         saveButton.addActionListener(e -> saveChangesToDatabase(table));
 
+        // *** NOVI GUMB ZA BRISANJE UPORABNIKA ***
+        JButton deleteUserButton = new JButton("Izbriši uporabnika");
+        deleteUserButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Najprej izberi uporabnika za brisanje.", "Napaka", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int userId = (Integer) table.getValueAt(selectedRow, 0);
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Ste prepričani, da želite izbrisati uporabnika z ID " + userId + "?",
+                    "Potrditev brisanja",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                try (Connection conn = DatabaseManager.getConnection()) {
+                    String sql = "SELECT izbrisi_uporabnika(?)";
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+                    stmt.setInt(1, userId);
+                    ResultSet rs = stmt.executeQuery();
+
+                    if (rs.next() && rs.getBoolean(1)) {
+                        JOptionPane.showMessageDialog(this, "Uporabnik uspešno izbrisan.");
+                        napolniUporabnike();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Brisanje uporabnika ni uspelo.", "Napaka", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Napaka pri brisanju: " + ex.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         bottomPanel.add(backButton);
         bottomPanel.add(addUserButton);
         bottomPanel.add(refreshButton);
         bottomPanel.add(saveButton);
+        bottomPanel.add(deleteUserButton);  // <-- dodaj gumb v panel
 
         panel.add(bottomPanel, BorderLayout.SOUTH);
         add(panel);
