@@ -3,49 +3,42 @@ import com.example.miniprojekt.db.DatabaseManager;
 
 public class Login {
 
-    private Connection conn;
-
-    public Login() {
-        connectToDatabase();
-    }
-
-    private void connectToDatabase() {
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Vrne ID uporabnika, ali -1 če prijava ni uspešna
+    // Vrne ID uporabnika ali -1, če prijava ni uspešna
     public int loginUser(String username, String password) {
-        try {
-            String query = "SELECT prijava_uporabnika(?, ?)";
-            PreparedStatement pst = conn.prepareStatement(query);
-            pst.setString(1, username);
-            pst.setString(2, password); // plaintext geslo, preveri se v SQL s crypt()
-            ResultSet rs = pst.executeQuery();
+        String query = "SELECT prijava_uporabnika(?, ?)";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pst = conn.prepareStatement(query)) {
 
-            if (rs.next()) {
-                return rs.getInt(1);  // ID uporabnika ali -1
+            pst.setString(1, username);
+            pst.setString(2, password); // geslo v plain text, preverja se v SQL funkciji
+
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1); // ID uporabnika ali -1
+                }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return -1;
     }
 
+    // Registracija uporabnika - vrne true, če uspe
     public boolean registerUser(String username, String password) {
-        try {
-            String query = "SELECT registracija_uporabnika(?, ?)";
-            PreparedStatement pst = conn.prepareStatement(query);
-            pst.setString(1, username);
-            pst.setString(2, password); // plaintext geslo, SQL ga šifrira
-            ResultSet rs = pst.executeQuery();
+        String query = "SELECT registracija_uporabnika(?, ?)";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pst = conn.prepareStatement(query)) {
 
-            if (rs.next()) {
-                return rs.getBoolean(1); // true, če registracija uspe
+            pst.setString(1, username);
+            pst.setString(2, password); // geslo plain text, SQL ga šifrira
+
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean(1); // true, če uspe
+                }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
