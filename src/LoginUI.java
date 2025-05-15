@@ -7,6 +7,7 @@ public class LoginUI extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
+    private JButton registerButton;
     private Login login;
 
     public LoginUI() {
@@ -15,8 +16,7 @@ public class LoginUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Glavni panel z vnosnimi polji
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         panel.add(new JLabel("Uporabniško ime:"));
@@ -28,8 +28,10 @@ public class LoginUI extends JFrame {
         panel.add(passwordField);
 
         loginButton = new JButton("Prijavi se");
-        panel.add(new JLabel());  // prazna celica za razmik
+        registerButton = new JButton("Registriraj se");
+
         panel.add(loginButton);
+        panel.add(registerButton);
 
         add(panel, BorderLayout.CENTER);
 
@@ -50,6 +52,28 @@ public class LoginUI extends JFrame {
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Nepravilno uporabniško ime ali geslo", "Napaka", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        registerButton.addActionListener(e -> {
+            JTextField newUsername = new JTextField();
+            JPasswordField newPassword = new JPasswordField();
+            Object[] message = {
+                    "Novo uporabniško ime:", newUsername,
+                    "Novo geslo:", newPassword
+            };
+
+            int option = JOptionPane.showConfirmDialog(this, message, "Registracija", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION) {
+                String newUser = newUsername.getText();
+                String newPass = new String(newPassword.getPassword());
+
+                boolean success = login.registerUser(newUser, newPass);
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "Registracija uspešna!", "Uspeh", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Registracija ni uspela. Uporabnik morda že obstaja.", "Napaka", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 

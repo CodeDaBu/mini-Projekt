@@ -5,7 +5,6 @@ import java.sql.*;
 
 import com.example.miniprojekt.db.DatabaseManager;
 
-
 public class GlavniWindowAdmin extends JFrame {
 
     private DefaultTableModel model;
@@ -13,7 +12,7 @@ public class GlavniWindowAdmin extends JFrame {
 
     public GlavniWindowAdmin() {
         setTitle("Admin - Seznam radijskih postaj");
-        setSize(700, 500);
+        setSize(900, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -47,11 +46,35 @@ public class GlavniWindowAdmin extends JFrame {
             new LoginUI().setVisible(true);
         });
 
+        // --- NOVI GUMB ZA BRISANJE POSTAJE ---
+        JButton deleteButton = new JButton("Izbriši izbrano postajo");
+        deleteButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Izberi postajo za brisanje.");
+                return;
+            }
+            int radioId = (Integer) table.getValueAt(selectedRow, 0);
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Ali si prepričan, da želiš izbrisati radijsko postajo z ID: " + radioId + "?",
+                    "Potrditev brisanja", JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (izbrisiRadioPostajo(radioId)) {
+                    JOptionPane.showMessageDialog(this, "Radijska postaja uspešno izbrisana.");
+                    napolniTabelo(); // osveži tabelo
+                } else {
+                    JOptionPane.showMessageDialog(this, "Brisanje ni uspelo.");
+                }
+            }
+        });
+
         bottomPanel.add(addButton);
         bottomPanel.add(switchToUsersButton);
         bottomPanel.add(refreshButton);
         bottomPanel.add(saveButton);
         bottomPanel.add(logoutButton);
+        bottomPanel.add(deleteButton);  // dodan gumb tukaj
 
         panel.add(bottomPanel, BorderLayout.SOUTH);
         add(panel);
@@ -108,6 +131,22 @@ public class GlavniWindowAdmin extends JFrame {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Napaka pri shranjevanju sprememb: " + e.getMessage());
         }
+    }
+
+    // --- NOVA METODA ZA KLIC SQL FUNKCIJE ZA BRISANJE ---
+    private boolean izbrisiRadioPostajo(int radioId) {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            String sql = "SELECT izbrisi_radio_postajo(?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, radioId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean(1);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Napaka pri brisanju radijske postaje: " + e.getMessage());
+        }
+        return false;
     }
 
     public static void main(String[] args) {

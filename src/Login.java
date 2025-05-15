@@ -23,11 +23,11 @@ public class Login {
             String query = "SELECT prijava_uporabnika(?, ?)";
             PreparedStatement pst = conn.prepareStatement(query);
             pst.setString(1, username);
-            pst.setString(2, password);
+            pst.setString(2, password); // plaintext geslo, preveri se v SQL s crypt()
             ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {
-                return rs.getInt(1);  // vrne ID ali -1
+                return rs.getInt(1);  // ID uporabnika ali -1
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -40,11 +40,11 @@ public class Login {
             String query = "SELECT registracija_uporabnika(?, ?)";
             PreparedStatement pst = conn.prepareStatement(query);
             pst.setString(1, username);
-            pst.setString(2, password);
+            pst.setString(2, password); // plaintext geslo, SQL ga šifrira
             ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {
-                return rs.getBoolean(1);
+                return rs.getBoolean(1); // true, če registracija uspe
             }
         } catch (SQLException e) {
             e.printStackTrace();
